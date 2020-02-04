@@ -30,9 +30,7 @@ client.on('messageReactionAdd', function(messageReaction, user)
 
     range = messageReaction.message.content.split('\n')[0];
 
-    update3(range);
-
-    update();
+    update3(range, update);
 });
 function grabSpreadSheetID()
 {
@@ -71,12 +69,12 @@ function update()
     });
 }
 
-function update3(sheetName)
+function update3(sheetName, callback)
 {
     fs.readFile('credentials.json', (err, content) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Sheets API.
-        authorize3(JSON.parse(content), addSheet, sheetName);
+        authorize3(JSON.parse(content), addSheet, sheetName, callback);
     });
 }
 
@@ -105,7 +103,7 @@ function authorize(credentials, callback) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize3(credentials, callback, sheetName) {
+function authorize3(credentials, callback, sheetName, callback2) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
@@ -114,7 +112,7 @@ function authorize3(credentials, callback, sheetName) {
     fs.readFile(TOKEN_PATH, (err, token) => {
       if (err) return getNewToken(oAuth2Client, callback);
       oAuth2Client.setCredentials(JSON.parse(token));
-      callback(oAuth2Client, sheetName);
+      callback(oAuth2Client, sheetName, callback2);
     });
   }
 
@@ -190,8 +188,7 @@ function sendData(auth)
       });
 }
 
-function addSheet(auth, sheetName)
-{
+function addSheet(auth, sheetName, callback) {
     var sheets = google.sheets({version: 'v4', auth});
 
     let requests = [];
@@ -211,5 +208,7 @@ function addSheet(auth, sheetName)
                 // Handle error
                 console.log(err);
               }
+			  
+			  callback();
         });
 }
