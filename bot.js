@@ -1,15 +1,24 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const fs = require('fs');
+const readline = require('readline');
+const {google} = require('googleapis');
+
 const emoteID = '%F0%9F%91%8D';
 let users = [];
-const spreadsheetID = '1m4ah9_Gi5o1h3wocZqIIIhJOZUU8H4Wyt1j18xijLiM';
+let spreadsheetID = '';
 let count = 0;
-
-var range ;
+let botID = "";
+var range;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
+
+function login()
+{
+    client.login(botID);
+}
 
 client.on('messageReactionAdd', function(messageReaction, user) 
 {
@@ -25,12 +34,25 @@ client.on('messageReactionAdd', function(messageReaction, user)
 
     update();
 });
+function grabSpreadSheetID()
+{
+    fs.readFile('spreadsheet.json', (err, content) => {
+        if (err) return console.log("Error loading botID");
+        spreadsheetID = "" + JSON.parse(content);
+    })
+}
 
-client.login('NjczOTEyNjk3NDk0MTc1NzU2.XjhCqA.NShLYDtY8d5Ghzs9JZBR8i_Rsu0');
+function grabBotId()
+{
+    fs.readFile('bot.json', (err, content) => {
+        if (err) return console.log("Error loading botID");
+        botID = "" + JSON.parse(content);
+        login();
+    })
+}
 
-const fs = require('fs');
-const readline = require('readline');
-const {google} = require('googleapis');
+grabBotId();
+grabSpreadSheetID();
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -191,4 +213,3 @@ function addSheet(auth, sheetName)
               }
         });
 }
-
