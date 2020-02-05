@@ -161,6 +161,8 @@ function sendData(auth)
 				console.error(err);
 				return;
 			}
+			
+			console.log("Spreadsheet Updated!");
       });
 }
 
@@ -180,7 +182,7 @@ function addSheet(auth, sheetName) {
     sheets.spreadsheets.batchUpdate({
         spreadsheetId: spreadsheetID, 
         resource: {requests}}, (err, response) => {
-            if (err) {
+            if (err && err.respone.status != 400) {
                 // Handle error
                 console.log(err);
 				sendData(auth);
