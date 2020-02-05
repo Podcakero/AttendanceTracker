@@ -30,8 +30,9 @@ client.on('messageReactionAdd', function(messageReaction, user)
 
     range = messageReaction.message.content.split('\n')[0];
 
-    update3(range, update);
+    updateSheets(range);
 });
+
 function grabSpreadSheetID()
 {
     fs.readFile('spreadsheet.json', (err, content) => {
@@ -59,22 +60,12 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 // time.
 const TOKEN_PATH = 'token.json';
 
-// Load client secrets from a local file.
-function update()
+function updateSheets(sheetName)
 {
     fs.readFile('credentials.json', (err, content) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Sheets API.
-        authorize(JSON.parse(content), sendData);
-    });
-}
-
-function update3(sheetName, callback)
-{
-    fs.readFile('credentials.json', (err, content) => {
-        if (err) return console.log('Error loading client secret file:', err);
-        // Authorize a client with credentials, then call the Google Sheets API.
-        authorize3(JSON.parse(content), addSheet, sheetName, callback);
+        authorize(JSON.parse(content), addSheet, sheetName);
     });
 }
 
@@ -84,26 +75,7 @@ function update3(sheetName, callback)
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
-  const oAuth2Client = new google.auth.OAuth2(
-      client_id, client_secret, redirect_uris[0]);
-
-  // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getNewToken(oAuth2Client, callback);
-    oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
-  });
-}
-
-/**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
- */
-function authorize3(credentials, callback, sheetName, callback2) {
+function authorize(credentials, callback, sheetName) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
@@ -112,7 +84,7 @@ function authorize3(credentials, callback, sheetName, callback2) {
     fs.readFile(TOKEN_PATH, (err, token) => {
       if (err) return getNewToken(oAuth2Client, callback);
       oAuth2Client.setCredentials(JSON.parse(token));
-      callback(oAuth2Client, sheetName, callback2);
+      callback(oAuth2Client, sheetName);
     });
   }
 
@@ -123,72 +95,76 @@ function authorize3(credentials, callback, sheetName, callback2) {
  * @param {getEventsCallback} callback The callback for the authorized client.
  */
 function getNewToken(oAuth2Client, callback) {
-  const authUrl = oAuth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: SCOPES,
-  });
-  console.log('Authorize this app by visiting this url:', authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-  rl.question('Enter the code from that page here: ', (code) => {
-    rl.close();
-    oAuth2Client.getToken(code, (err, token) => {
-      if (err) return console.error('Error while trying to retrieve access token', err);
-      oAuth2Client.setCredentials(token);
-      // Store the token to disk for later program executions
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
-      callback(oAuth2Client);
-    });
-  });
+	const authUrl = oAuth2Client.generateAuthUrl({
+		access_type: 'offline',
+		scope: SCOPES,
+	});
+	console.log('Authorize this app by visiting this url:', authUrl);
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+	});
+	rl.question('Enter the code from that page here: ', (code) => {
+		rl.close();
+		oAuth2Client.getToken(code, (err, token) => {
+			if (err) return console.error('Error while trying to retrieve access token', err);
+			oAuth2Client.setCredentials(token);
+			// Store the token to disk for later program executions
+			fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+				if (err) return console.error(err);
+				console.log('Token stored to', TOKEN_PATH);
+			});
+			callback(oAuth2Client);
+		});
+	});
 }
 
 function sendData(auth)
 {
+	//Create an ojbect to act as the google apiw
     var sheets = google.sheets({version: 'v4', auth});
 
-    var request = {
+	//Generate our request
+    var request = 
+	{
         // The ID of the spreadsheet to update.
         spreadsheetId: spreadsheetID,  // TODO: Update placeholder value.
     
-        resource: {
+        resource: 
+		{
           // How the input data should be interpreted.
-          valueInputOption: 'RAW',  // TODO: Update placeholder value.
+			valueInputOption: 'RAW',  // TODO: Update placeholder value.
     
-          // The new values to apply to the spreadsheet.
-          data: [
-              {
-                  "values": 
-                      users
-                  ,
-                  "range": range
-              }
-          ],  // TODO: Update placeholder value.
+			// The new values to apply to the spreadsheet.
+			data: [
+				{
+					"values": 
+						users
+					,
+					"range": range
+				}
+			],  // TODO: Update placeholder value.
     
-          // TODO: Add desired properties to the request body.
-        },
+		},
     
+		//Grab the authorization toen stored at token.json
         auth: fs.readFile(TOKEN_PATH, (err, content) => {
             return JSON.parse(content).access_token;
         }),
       };
     
-      sheets.spreadsheets.values.batchUpdate(request, function(err, response) {
-        if (err) {
-          console.error(err);
-          return;
-        }
-    
-        // TODO: Change code below to process the `response` object:
-        //console.log(JSON.stringify(response, null, 2));
+		
+	sheets.spreadsheets.values.batchUpdate(request, function(err, response) 
+		{
+			if (err) 
+			{
+				console.error(err);
+				return;
+			}
       });
 }
 
-function addSheet(auth, sheetName, callback) {
+function addSheet(auth, sheetName) {
     var sheets = google.sheets({version: 'v4', auth});
 
     let requests = [];
@@ -207,8 +183,9 @@ function addSheet(auth, sheetName, callback) {
             if (err) {
                 // Handle error
                 console.log(err);
+				sendData(auth);
               }
 			  
-			  callback();
+			  sendData(auth);
         });
 }
