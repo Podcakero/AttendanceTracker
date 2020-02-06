@@ -41,6 +41,24 @@ client.on('messageReactionAdd', function(messageReaction, user)
     }
 });
 
+client.on('messageReactionRemove', function(messageReaction, user) 
+{
+	let guilds = client.guilds.first();
+	let name;
+	
+    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar' && messageReaction.message.author.bot)
+    {
+		//fetchMember function wraps output in a Promise Object, had difficulty accessing
+		if (guilds.member(user).nickname == null)
+			name = "CANCELLED - " + [user.username];
+		else
+			name = "CANCELLED - " + [guilds.member(user).nickname];
+		
+		range = messageReaction.message.content.split('\n')[1] + ":" + messageReaction.message.content.split('\n')[0];
+		updateSheets(range, name);
+    }
+});
+
 function grabSpreadSheetID()
 {
     fs.readFile('spreadsheet.json', (err, content) => {
