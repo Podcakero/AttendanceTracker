@@ -15,6 +15,33 @@ const discordServerID = 266074632056995840;
 
 //&& messageReaction.message.author.bot
 
+/*
+{
+  "requests": [
+    {
+      "deleteDimension": {
+        "range": {
+          "sheetId": sheetId,
+          "dimension": "ROWS",
+          "startIndex": 0,
+          "endIndex": 3
+        }
+      }
+    },
+    {
+      "deleteDimension": {
+        "range": {
+          "sheetId": sheetId,
+          "dimension": "COLUMNS",
+          "startIndex": 1,
+          "endIndex": 4
+        }
+      }
+    },
+  ],
+}
+*/
+
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -42,6 +69,23 @@ client.on('messageReactionAdd', function(messageReaction, user)
 		updateSheets(range, name);
     }
 });
+
+client.on('messageReactionRemove', function(messageReaction, user)
+{
+	let guilds = client.guilds.first();
+	let name;
+	
+	if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar')
+	{
+		//fetchMember function wraps output in a Promise Object, had difficulty accessing
+		if (guilds.member(user).nickname == null)
+			name = [user.username];
+		else
+			name = [guilds.member(user).nickname];
+		
+		range = messageReaction.message.content.split('\n')[1] + ":" + messageReaction.message.content.split('\n')[0];
+		removeFromSheets(range, name);
+    }
 
 function grabSpreadSheetID()
 {
@@ -76,6 +120,15 @@ function updateSheets(sheetName, name)
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Sheets API.
         authorize(JSON.parse(content), addSheet, sheetName, name);
+    });
+}
+
+function removeFromSheets(sheetName, name)
+{
+	fs.readFile('credentials.json', (err, content) => {
+        if (err) return console.log('Error loading client secret file:', err);
+        // Authorize a client with credentials, then call the Google Sheets API.
+        authorize(JSON.parse(content), removeFromSheet, sheetName, name);
     });
 }
 
@@ -170,6 +223,59 @@ function sendData(auth, name)
 			
 			console.log("Spreadsheet Updated!");
       });
+}
+
+function removeFromSheet(SheetName, name) 
+{
+	var sheets = google.sheets({version: 'v4', auth});
+
+    /*var request = {
+	  "requests": [
+		{
+		  "deleteDimension": {
+			"range": {
+			  "sheetId": sheetId,
+			  "dimension": "ROWS",
+			  "startIndex": 0,
+			  "endIndex": 3
+			}
+		  }
+		},
+		{
+		  "deleteDimension": {
+			"range": {
+			  "sheetId": sheetId,
+			  "dimension": "COLUMNS",
+			  "startIndex": 1,
+			  "endIndex": 4
+			}
+		  }
+		},
+	  ],
+	}*/
+	
+	let requests = [];
+	
+	requests.push({
+	  findReplace: {
+		find: name,
+		replacement: "",
+		matchEntireCell: true,
+		range: sheetName,
+		allSheets: false,
+	  },
+	});
+
+
+	sheets.spreadsheets.batchUpdate({
+        spreadsheetId: spreadsheetID, 
+	resource: {requests}}, (err, response) => {
+            if (err && err.response.status != 400) {
+                // Handle error
+                console.log(err);
+              }
+			  console.log("Success");
+        });
 }
 
 function addSheet(auth, sheetName, name) {
