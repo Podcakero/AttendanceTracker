@@ -11,7 +11,9 @@ let count = 0;
 let botID = "";
 let range;
 
-const discordServerID = 266074632056995840
+const discordServerID = 266074632056995840;
+
+//&& messageReaction.message.author.bot
 
 
 client.on('ready', () => {
@@ -28,7 +30,7 @@ client.on('messageReactionAdd', function(messageReaction, user)
 	let guilds = client.guilds.first();
 	let name;
 	
-    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar' && messageReaction.message.author.bot)
+    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar')
     {
 		//fetchMember function wraps output in a Promise Object, had difficulty accessing
 		if (guilds.member(user).nickname == null)
@@ -137,21 +139,17 @@ function sendData(auth, name)
 	{
         // The ID of the spreadsheet to update.
         spreadsheetId: spreadsheetID,  // TODO: Update placeholder value.
+		range: range,
+		valueInputOption: 'RAW',
     
         resource: 
 		{
-          // How the input data should be interpreted.
-			valueInputOption: 'RAW',  // TODO: Update placeholder value.
     
 			// The new values to apply to the spreadsheet.
-			data: [
-				{
-					"values": 
-						[user]
-					,
-					"range": range
-				}
-			],  // TODO: Update placeholder value.
+			"values": 
+			[
+				name
+			]
     
 		},
     
@@ -162,7 +160,7 @@ function sendData(auth, name)
       };
     
 		
-	sheets.spreadsheets.values.batchUpdate(request, function(err, response) 
+	sheets.spreadsheets.values.append(request, function(err, response) 
 		{
 			if (err) 
 			{
@@ -189,7 +187,7 @@ function addSheet(auth, sheetName, name) {
 
     sheets.spreadsheets.batchUpdate({
         spreadsheetId: spreadsheetID, 
-        resource: {requests}}, (err, response) => {
+	resource: {requests}}, (err, response) => {
             if (err && err.response.status != 400) {
                 // Handle error
                 console.log(err);
