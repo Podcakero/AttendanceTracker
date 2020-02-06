@@ -226,7 +226,7 @@ function sendData(auth, name)
       });
 }
 
-function removeFromSheet(SheetName, name) 
+function removeFromSheet(auth, sheetName, name) 
 {
 	var sheets = google.sheets({version: 'v4', auth});
 
