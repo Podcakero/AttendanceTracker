@@ -9,7 +9,10 @@ let users = [];
 let spreadsheetID = '';
 let count = 0;
 let botID = "";
-var range;
+let range;
+
+const discordServerID = 266074632056995840
+
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -22,15 +25,22 @@ function login()
 
 client.on('messageReactionAdd', function(messageReaction, user) 
 {
+	let guilds = client.guilds.first();
+	
     if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar')
     {
-        users[count] = [user.lastMessage.member.nickname];
+		console.log(messageReaction);
+		
+		//fetchMember function wraps output in a Promise Object, had difficulty accessing
+		if (guilds.member(user).nickname == null)
+			users[count] = [user.username];
+		else
+			users[count] = [guilds.member(user).nickname];
         count++;
+		
+		range = messageReaction.message.content.split('\n')[0];
+		updateSheets(range);
     }
-
-    range = messageReaction.message.content.split('\n')[0];
-
-    updateSheets(range);
 });
 
 function grabSpreadSheetID()
@@ -182,7 +192,7 @@ function addSheet(auth, sheetName) {
     sheets.spreadsheets.batchUpdate({
         spreadsheetId: spreadsheetID, 
         resource: {requests}}, (err, response) => {
-            if (err && err.respone.status != 400) {
+            if (err && err.response.status != 400) {
                 // Handle error
                 console.log(err);
 				sendData(auth);
