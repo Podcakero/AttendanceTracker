@@ -260,10 +260,9 @@ function removeFromSheet(auth, sheetName, name)
 	requests.push({
 	  findReplace: {
 		find: name,
-		replacement: "",
-		matchEntireCell: true,
-		range: sheetName,
-		allSheets: false,
+		replacement: "Test",
+		//matchEntireCell: true,
+		range: { sheetName }
 	  },
 	});
 
