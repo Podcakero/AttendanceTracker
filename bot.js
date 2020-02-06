@@ -85,7 +85,8 @@ client.on('messageReactionRemove', function(messageReaction, user)
 		
 		range = messageReaction.message.content.split('\n')[1] + ":" + messageReaction.message.content.split('\n')[0];
 		removeFromSheets(range, name);
-    }
+	}
+})
 
 function grabSpreadSheetID()
 {
