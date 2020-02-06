@@ -13,36 +13,6 @@ let range;
 
 const discordServerID = 266074632056995840;
 
-//&& messageReaction.message.author.bot
-
-/*
-{
-  "requests": [
-    {
-      "deleteDimension": {
-        "range": {
-          "sheetId": sheetId,
-          "dimension": "ROWS",
-          "startIndex": 0,
-          "endIndex": 3
-        }
-      }
-    },
-    {
-      "deleteDimension": {
-        "range": {
-          "sheetId": sheetId,
-          "dimension": "COLUMNS",
-          "startIndex": 1,
-          "endIndex": 4
-        }
-      }
-    },
-  ],
-}
-*/
-
-
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -57,7 +27,7 @@ client.on('messageReactionAdd', function(messageReaction, user)
 	let guilds = client.guilds.first();
 	let name;
 	
-    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar')
+    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar' && messageReaction.message.author.bot)
     {
 		//fetchMember function wraps output in a Promise Object, had difficulty accessing
 		if (guilds.member(user).nickname == null)
