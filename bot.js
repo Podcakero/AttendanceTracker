@@ -27,10 +27,8 @@ client.on('messageReactionAdd', function(messageReaction, user)
 {
 	let guilds = client.guilds.first();
 	
-    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar')
+    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar' && messageReaction.message.author.bot)
     {
-		console.log(messageReaction);
-		
 		//fetchMember function wraps output in a Promise Object, had difficulty accessing
 		if (guilds.member(user).nickname == null)
 			users[count] = [user.username];
@@ -38,7 +36,7 @@ client.on('messageReactionAdd', function(messageReaction, user)
 			users[count] = [guilds.member(user).nickname];
         count++;
 		
-		range = messageReaction.message.content.split('\n')[0];
+		range = messageReaction.message.content.split('\n')[1] + ":" + messageReaction.message.content.split('\n')[0];
 		updateSheets(range);
     }
 });
