@@ -26,18 +26,18 @@ function login()
 client.on('messageReactionAdd', function(messageReaction, user) 
 {
 	let guilds = client.guilds.first();
+	let name;
 	
     if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar' && messageReaction.message.author.bot)
     {
 		//fetchMember function wraps output in a Promise Object, had difficulty accessing
 		if (guilds.member(user).nickname == null)
-			users[count] = [user.username];
+			name = [user.username];
 		else
-			users[count] = [guilds.member(user).nickname];
-        count++;
+			name = [guilds.member(user).nickname];
 		
 		range = messageReaction.message.content.split('\n')[1] + ":" + messageReaction.message.content.split('\n')[0];
-		updateSheets(range);
+		updateSheets(range, name);
     }
 });
 
@@ -68,12 +68,12 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 // time.
 const TOKEN_PATH = 'token.json';
 
-function updateSheets(sheetName)
+function updateSheets(sheetName, name)
 {
     fs.readFile('credentials.json', (err, content) => {
         if (err) return console.log('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Sheets API.
-        authorize(JSON.parse(content), addSheet, sheetName);
+        authorize(JSON.parse(content), addSheet, sheetName, name);
     });
 }
 
@@ -83,7 +83,7 @@ function updateSheets(sheetName)
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback, sheetName) {
+function authorize(credentials, callback, sheetName, name) {
     const {client_secret, client_id, redirect_uris} = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
@@ -92,7 +92,7 @@ function authorize(credentials, callback, sheetName) {
     fs.readFile(TOKEN_PATH, (err, token) => {
       if (err) return getNewToken(oAuth2Client, callback);
       oAuth2Client.setCredentials(JSON.parse(token));
-      callback(oAuth2Client, sheetName);
+      callback(oAuth2Client, sheetName, name);
     });
   }
 
@@ -127,7 +127,7 @@ function getNewToken(oAuth2Client, callback) {
 	});
 }
 
-function sendData(auth)
+function sendData(auth, name)
 {
 	//Create an ojbect to act as the google apiw
     var sheets = google.sheets({version: 'v4', auth});
@@ -147,7 +147,7 @@ function sendData(auth)
 			data: [
 				{
 					"values": 
-						users
+						[user]
 					,
 					"range": range
 				}
@@ -174,7 +174,7 @@ function sendData(auth)
       });
 }
 
-function addSheet(auth, sheetName) {
+function addSheet(auth, sheetName, name) {
     var sheets = google.sheets({version: 'v4', auth});
 
     let requests = [];
@@ -193,9 +193,9 @@ function addSheet(auth, sheetName) {
             if (err && err.response.status != 400) {
                 // Handle error
                 console.log(err);
-				sendData(auth);
+				sendData(auth, name);
               }
 			  
-			  sendData(auth);
+			  sendData(auth, name);
         });
 }
