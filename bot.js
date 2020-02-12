@@ -27,7 +27,9 @@ client.on('messageReactionAdd', function(messageReaction, user)
 	let guilds = client.guilds.first();
 	let name;
 	
-    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar' && messageReaction.message.author.bot)
+	// && messageReaction.message.author.bot
+	
+    if (messageReaction.emoji.identifier == emoteID && messageReaction.message.channel.name == 'calendar')
     {
 		//fetchMember function wraps output in a Promise Object, had difficulty accessing
 		if (guilds.member(user).nickname == null)
